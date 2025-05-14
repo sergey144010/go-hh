@@ -39,7 +39,10 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td></td>
+                    <td>
+                        <p>содержит</p>
+                        <input v-model="filterCompany">
+                    </td>
                 </tr>
                 <tr v-for="vacancy in filteredVacancies">
                     <td>{{ vacancy.name }}</td>
@@ -71,6 +74,7 @@
       workFormatList: [[ .WorkFormatList ]],
       selectedWorkFormat: '',
       filterDate: '',
+      filterCompany: '',
     }
   },
   computed: {
@@ -107,6 +111,15 @@
         if (this.filterDate.length != 0) {
             preparedList = preparedList.filter(function(vac) {
                 if (vac.created_at.toLowerCase().includes(this.filterDate)) {
+                    return true
+                }
+                return false
+            }, this);
+        }
+
+        if (this.filterCompany.length != 0) {
+            preparedList = preparedList.filter(function(vac) {
+                if (vac.employer.name.toLowerCase().includes(this.filterCompany.toLowerCase())) {
                     return true
                 }
                 return false
