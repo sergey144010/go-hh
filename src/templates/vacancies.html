@@ -1,0 +1,125 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Vacancies</title>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    </head>
+    <body>        
+        <div id="app">
+            <div>Всего найдено: {{ countVacancies }}</div>
+            <div>Отображено: {{ countFilteredVacancies }}</div>
+            <table>
+                <tr>
+                    <th style="width:30%">Name</th>
+                    <th>Format</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Created at</th>
+                    <th>Count Responses</th>
+                    <th>Count Total Responses</th>
+                    <th>Link</th>
+                    <th>Employer</th>
+                </tr>
+                <tr>
+                    <td>
+                        <p>исключить если содержится что либо из</p>
+                        <input v-model="filterVacancies">
+                    </td>
+                    <td>
+                        <select v-model="selectedWorkFormat" multiple>
+                            <option v-for="item in workFormatList" v-bind:value="item">{{item.name}}</option>
+                       </select>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <p>содержит</p>
+                        <input v-model="filterDate">
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr v-for="vacancy in filteredVacancies">
+                    <td>{{ vacancy.name }}</td>
+                    <td>
+                        <span v-for="vformat in vacancy.work_format">{{ vformat.name }} </span>
+                    </td>
+                    <td>{{ vacancy.salary.from }}</td>
+                    <td>{{ vacancy.salary.to }}</td>
+                    <td>{{ vacancy.created_at }}</td>
+                    <td>{{ vacancy.counters.responses }}</td>
+                    <td>{{ vacancy.counters.total_responses }}</td>
+                    <td><a :href="vacancy.alternate_url" target="_blank">{{ vacancy.id }}</a></td>
+                    <td>{{ vacancy.employer.name }}</td>
+                </tr>
+            </table>
+
+
+
+        </div>
+<script>
+  const { createApp, ref } = Vue
+
+  createApp({
+    data() {
+    return {
+      filterVacancies: 'bitrix, битрикс',
+      vacancies: [[ .Vacancies ]],
+      countVacancies: [[ .Count ]],
+      workFormatList: [[ .WorkFormatList ]],
+      selectedWorkFormat: '',
+      filterDate: '',
+    }
+  },
+  computed: {
+    filteredVacancies: function() {
+        let preparedList = []
+        if (this.filterVacancies.length < 3) {
+            preparedList = this.vacancies
+        } else {
+            listFilter = this.filterVacancies.toLowerCase().split(',').map(item => item.trim())
+            let regexp = new RegExp(listFilter.join('|'), "i")
+
+            preparedList = this.vacancies.filter(function(vac) {
+            if (! regexp.test(vac.name.toLowerCase())) {
+                return true
+            }
+            return false
+            }, this)
+        }
+
+        if (this.selectedWorkFormat.length != 0) {
+            preparedList = preparedList.filter(function(vac) {
+                for (i=0; i < vac.work_format.length; i++) {
+                    for (j=0; j < this.selectedWorkFormat.length; j++) {
+                        if (vac.work_format[i].id == this.selectedWorkFormat[j].id) {
+                            return true
+                        }
+                    }
+                }
+                return false
+            }, this);
+            
+        }
+
+        if (this.filterDate.length != 0) {
+            preparedList = preparedList.filter(function(vac) {
+                if (vac.created_at.toLowerCase().includes(this.filterDate)) {
+                    return true
+                }
+                return false
+            }, this);
+        }
+
+        return preparedList
+    },
+    countFilteredVacancies: function() {
+        return this.filteredVacancies.length
+    }
+  }
+  }).mount('#app')
+</script>
+    </body>
+</html>
