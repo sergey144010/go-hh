@@ -88,10 +88,10 @@ func requestGetAreas() (*http.Request, error) {
 	return requestGet("https://api.hh.ru/areas")
 }
 
-func requestTake(calback func() (*http.Request, error)) ([]byte, error) {
+func requestTake(callback func() (*http.Request, error)) ([]byte, error) {
 	client := &http.Client{}
 
-	request, err := calback()
+	request, err := callback()
 
 	if err != nil {
 		fmt.Println("Error request", err)
