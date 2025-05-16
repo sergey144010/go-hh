@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		fmt.Println("Error loading .env file")
 
-		return
+		// return
 	}
 
 	router := mux.NewRouter()
