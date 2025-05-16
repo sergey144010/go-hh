@@ -1,4 +1,3 @@
-
 # Build
 docker build -t go-hh-image .
 
