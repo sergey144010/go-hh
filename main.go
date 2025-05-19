@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
+	IndexController "go-hh/src/controllers/main"
+	TestController "go-hh/src/controllers/test"
+	VacanciesController "go-hh/src/controllers/vacancies"
 	"net/http"
-    "github.com/gorilla/mux"
-	"go-hh/src/controllers/vacancies"
-	"go-hh/src/controllers/test"
 	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -19,14 +21,21 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-    router.HandleFunc("/vacancies", VacanciesController.Handler)
+	router.HandleFunc("/", IndexController.Handler)
+	router.HandleFunc("/vacancies", redirectToMain)
+	router.HandleFunc("/vacancies/", redirectToMain)
+	router.HandleFunc("/vacancies/php/{period}", VacanciesController.Handler)
 	router.HandleFunc("/test", TestController.Handler)
-    http.Handle("/",router)
- 
-    fmt.Println("Server is listening...")
-    http.ListenAndServe(":" + port(), nil)
+	http.Handle("/", router)
+
+	fmt.Println("Server is listening...")
+	http.ListenAndServe(":"+port(), nil)
 }
 
 func port() string {
 	return os.Getenv("WEB_SERVER_PORT")
+}
+
+func redirectToMain(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
