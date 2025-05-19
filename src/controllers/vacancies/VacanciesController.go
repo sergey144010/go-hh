@@ -5,6 +5,7 @@ import (
 	VacancyService "go-hh/src/services/vacancy"
 	"html/template"
 	"net/http"
+	"github.com/gorilla/mux"
 )
 
 type ViewData struct {
@@ -14,7 +15,9 @@ type ViewData struct {
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	response := VacancyService.Take()
+	vars := mux.Vars(r)
+    period := vars["period"]
+	response := VacancyService.Take(period)
 
 	workFormatList := []res.IdName{}
 
