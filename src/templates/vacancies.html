@@ -10,7 +10,8 @@
             <div>Отображено: {{ countFilteredVacancies }}</div>
             <table>
                 <tr>
-                    <th style="width:30%">Name</th>
+                    <th style="width:500px">Name</th>
+                    <th style="word-wrap: break-word; max-width: 100px;">Employer</th>
                     <th>Format</th>
                     <th>From</th>
                     <th>To</th>
@@ -18,12 +19,15 @@
                     <th>Ответили</th>
                     <th>Откликнулось</th>
                     <th>Link</th>
-                    <th>Employer</th>
                 </tr>
                 <tr>
                     <td>
                         <p>исключить если содержится что либо из</p>
                         <input v-model="filterVacancies">
+                    </td>
+                    <td>
+                        <p>содержит</p>
+                        <input v-model="filterCompany">
                     </td>
                     <td>
                         <select v-model="selectedWorkFormat" multiple>
@@ -39,13 +43,13 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>
-                        <p>содержит</p>
-                        <input v-model="filterCompany">
-                    </td>
                 </tr>
-                <tr v-for="vacancy in filteredVacancies">
+                <tr
+                  style="height:30px"
+                  v-for="vacancy in filteredVacancies"
+                >
                     <td>{{ vacancy.name }}</td>
+                    <td>{{ vacancy.employer.name }}</td>
                     <td>
                         <span v-for="vformat in vacancy.work_format">{{ vformat.name }} </span>
                     </td>
@@ -55,12 +59,8 @@
                     <td>{{ vacancy.counters.responses }}</td>
                     <td>{{ vacancy.counters.total_responses }}</td>
                     <td><a :href="vacancy.alternate_url" target="_blank">{{ vacancy.id }}</a></td>
-                    <td>{{ vacancy.employer.name }}</td>
                 </tr>
             </table>
-
-
-
         </div>
 <script>
   const { createApp, ref } = Vue
@@ -68,7 +68,7 @@
   createApp({
     data() {
     return {
-      filterVacancies: 'bitrix, битрикс',
+      filterVacancies: 'bitrix, битрикс, 1с, 1c, devops, авитолог, cистемный администратор',
       vacancies: [[ .Vacancies ]],
       countVacancies: [[ .Count ]],
       workFormatList: [[ .WorkFormatList ]],
