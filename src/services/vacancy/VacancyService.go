@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	response "go-hh/src/responses"
+	AppRequestService "go-hh/src/services/appRequest"
 	BaseUrlBuilder "go-hh/src/services/baseUrlBuilder"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"sort"
-	"strings"
+	"time"
 )
 
 type TakeResponse struct {
@@ -19,17 +19,17 @@ type TakeResponse struct {
 	WorkFormatList *map[string]string
 }
 
-func Take() TakeResponse {
+func Take(period string) TakeResponse {
 	var listVacancies []response.Vacancy
 	vacanciesRawFirst, _ := requestTake(func() (*http.Request, error) {
-		return requestGetVacancies(0)
+		return requestGetVacancies(0, period)
 	})
 	vacanciesFirst := vacanciesCollection(vacanciesRawFirst)
 	listVacancies = append(listVacancies, vacanciesFirst.Items...)
 
 	for i := 1; i < vacanciesFirst.PerPage; i++ {
 		vacanciesRaw, _ := requestTake(func() (*http.Request, error) {
-			return requestGetVacancies(i)
+			return requestGetVacancies(i, period)
 		})
 		vacancies := vacanciesCollection(vacanciesRaw)
 		listVacancies = append(listVacancies, vacancies.Items...)
@@ -40,12 +40,14 @@ func Take() TakeResponse {
 	})
 
 	workFormatList := map[string]string{}
-	for _, vacancy := range listVacancies {
+	for index, vacancy := range listVacancies {
 		for _, item := range vacancy.WorkFormat {
 			if _, ok := workFormatList[item.Id]; !ok {
 				workFormatList[item.Id] = item.Name
 			}
 		}
+		t, _ := time.Parse("2006-01-02T15:04:05+0300", vacancy.CreatedAt)
+		listVacancies[index].CreatedAt = t.Format(time.DateOnly)
 	}
 
 	return TakeResponse{
@@ -59,33 +61,29 @@ func accessToken() string {
 	return os.Getenv("ACCESS_TOKEN")
 }
 
-func requestGet(uri string) (*http.Request, error) {
-	request, err := http.NewRequest(http.MethodGet, uri, nil)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("User-Agent", os.Getenv("USER_AGENT"))
-	request.Header.Add("Content-Type", "application/json")
-	request.Header.Add("Authorization", "Bearer "+accessToken())
-
-	return request, nil
-}
-
-func baseUrl() string {
+func baseUrl(periodInput string) string {
 	// return "https://api.hh.ru/vacancies?text=php&area=113&period=1&responses_count_enabled=true"
 
 	builder := BaseUrlBuilder.BaseUrlBuilder{
 		BaseUrl: "https://api.hh.ru/vacancies?",
 	}
 
-	return builder.Text("php").Area(113).Period(1).ResponsesCountEnabled().Get()
+	period := 1
+	if periodInput == "day" {
+		period = 1
+	}
+	if periodInput == "month" {
+		period = 30
+	}
+
+	return builder.Text("php").Area(113).Period(period).ResponsesCountEnabled().Get()
 }
 
-func requestGetVacancies(page int) (*http.Request, error) {
-	return requestGet(baseUrl() + "&page=" + fmt.Sprintf("%d", page))
-}
-func requestGetAreas() (*http.Request, error) {
-	return requestGet("https://api.hh.ru/areas")
+func requestGetVacancies(page int, period string) (*http.Request, error) {
+	return AppRequestService.RequestGet(
+		baseUrl(period)+"&page="+fmt.Sprintf("%d", page),
+		accessToken(),
+	)
 }
 
 func requestTake(callback func() (*http.Request, error)) ([]byte, error) {
@@ -125,38 +123,4 @@ func vacanciesCollection(body []byte) *response.VacanciesResponse {
 	}
 
 	return &vacancies
-}
-
-func areasCollection(body []byte) {
-	var areasCollection []response.AreaRoot
-	errUn := json.Unmarshal(body, &areasCollection)
-	if errUn != nil {
-		fmt.Println(errUn)
-	}
-
-	fmt.Println(areasCollection)
-}
-
-func formData() url.Values {
-	formData := url.Values{}
-	formData.Set("grant_type", "client_credentials")
-	formData.Set("client_id", os.Getenv("CLIENT_ID"))
-	formData.Set("client_secret", os.Getenv("CLIENT_SECRET"))
-
-	return formData
-}
-
-func requestAccessToken() (*http.Request, error) {
-	formData := formData()
-	reqBody := strings.NewReader(formData.Encode())
-	uri := "https://api.hh.ru/token"
-
-	request, err := http.NewRequest(http.MethodPost, uri, reqBody)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("User-Agent", os.Getenv("USER_AGENT"))
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	return request, nil
 }
