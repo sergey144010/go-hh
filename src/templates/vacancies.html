@@ -6,10 +6,15 @@
     </head>
     <body>        
         <div id="app">
-            <div>Всего найдено: {{ countVacancies }}</div>
-            <div>Отображено: {{ countFilteredVacancies }}</div>
+            <div>
+                Всего найдено: {{ countVacancies }} |
+                Отображено: {{ countFilteredVacancies }} |
+                Выбрано: {{ countSelectedVacancies }}
+                <button @click="onReset">Сбросить</button>
+            </div>
             <table>
                 <tr>
+                    <th></th>
                     <th style="width:500px">Name</th>
                     <th style="word-wrap: break-word; max-width: 100px;">Employer</th>
                     <th>Format</th>
@@ -21,9 +26,13 @@
                     <th>Link</th>
                 </tr>
                 <tr>
+                    <td></td>
                     <td>
                         <p>исключить если содержится что либо из</p>
                         <input v-model="filterVacancies">
+
+                        <p>выбрать только</p>
+                        <input v-model="filterVacanciesOnly">
                     </td>
                     <td>
                         <p>содержит</p>
@@ -48,7 +57,12 @@
                   style="height:30px"
                   v-for="vacancy in filteredVacancies"
                 >
-                    <td>{{ vacancy.name }}</td>
+                    <td>
+                        <input type="checkbox" v-bind:value="vacancy.id" v-model="selectedPositions">
+                    </td>
+                    <td @click="onSelectPosition(vacancy)">
+                        {{ vacancy.name }}
+                    </td>
                     <td>{{ vacancy.employer.name }}</td>
                     <td>
                         <span v-for="vformat in vacancy.work_format">{{ vformat.name }} </span>
@@ -68,30 +82,46 @@
   createApp({
     data() {
     return {
-      filterVacancies: 'bitrix, битрикс, 1с, 1c, devops, авитолог, cистемный администратор',
+      filterVacancies: 'bitrix, битрикс, 1с, 1c, devops, авитолог, истемный администратор',
+      filterVacanciesOnly: '',
       vacancies: [[ .Vacancies ]],
       countVacancies: [[ .Count ]],
       workFormatList: [[ .WorkFormatList ]],
       selectedWorkFormat: '',
       filterDate: '',
       filterCompany: '',
+      selectedPositions: [],
     }
   },
   computed: {
     filteredVacancies: function() {
-        let preparedList = []
-        if (this.filterVacancies.length < 3) {
-            preparedList = this.vacancies
-        } else {
-            listFilter = this.filterVacancies.toLowerCase().split(',').map(item => item.trim())
-            let regexp = new RegExp(listFilter.join('|'), "i")
+        let preparedList = this.vacancies
+
+        if (
+            this.filterVacancies.length !=0 &&
+            this.filterVacancies.length > 2
+        ) {
+            listFilters = this.filterVacancies.toLowerCase().split(',').map(item => item.trim())
+            let regexp = new RegExp(listFilters.join('|'), "i")
 
             preparedList = this.vacancies.filter(function(vac) {
-            if (! regexp.test(vac.name.toLowerCase())) {
-                return true
-            }
-            return false
+                if (! regexp.test(vac.name.toLowerCase())) {
+                    return true
+                }
+                return false
             }, this)
+        }
+
+        if (
+            this.filterVacanciesOnly.length !=0 &&
+            this.filterVacanciesOnly.length > 2
+        ) {
+            preparedList = preparedList.filter(function(vac) {
+                if (vac.name.toLowerCase().includes(this.filterVacanciesOnly.toLowerCase())) {
+                    return true
+                }
+                return false
+            }, this);
         }
 
         if (this.selectedWorkFormat.length != 0) {
@@ -130,8 +160,26 @@
     },
     countFilteredVacancies: function() {
         return this.filteredVacancies.length
-    }
-  }
+    },
+    countSelectedVacancies: function() {
+        return this.selectedPositions.length
+    },
+  },
+  methods: {
+    onSelectPosition(vacancy) {
+        index = this.selectedPositions.findIndex(id => id === vacancy.id)
+        if (index == -1) {
+            this.selectedPositions.push(vacancy.id)
+
+            return
+        }
+
+        this.selectedPositions = this.selectedPositions.filter(id => id !== vacancy.id)
+    },
+    onReset() {
+        this.selectedPositions = []
+    },
+  },
   }).mount('#app')
 </script>
     </body>
