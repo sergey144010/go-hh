@@ -2,9 +2,11 @@ package VacanciesController
 
 import (
 	res "go-hh/src/responses"
+	"go-hh/src/services/hh/oauth"
 	VacancyService "go-hh/src/services/vacancy"
 	"html/template"
 	"net/http"
+
 	"github.com/gorilla/mux"
 )
 
@@ -12,6 +14,7 @@ type ViewData struct {
 	Vacancies *[]res.Vacancy
 	Count int
 	WorkFormatList *[]res.IdName
+	Uri string
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +32,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		Vacancies: response.ListVacancies,
 		Count: response.Count,
 		WorkFormatList: &workFormatList,
+		Uri: oauth.Uri(),
 	}
 
 	// var vacancies []response.Vacancy
