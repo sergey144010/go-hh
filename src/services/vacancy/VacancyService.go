@@ -21,14 +21,14 @@ type TakeResponse struct {
 
 func Take(period string) TakeResponse {
 	var listVacancies []response.Vacancy
-	vacanciesRawFirst, _ := requestTake(func() (*http.Request, error) {
+	vacanciesRawFirst, _ := RequestTake(func() (*http.Request, error) {
 		return requestGetVacancies(0, period)
 	})
 	vacanciesFirst := vacanciesCollection(vacanciesRawFirst)
 	listVacancies = append(listVacancies, vacanciesFirst.Items...)
 
 	for i := 1; i < vacanciesFirst.PerPage; i++ {
-		vacanciesRaw, _ := requestTake(func() (*http.Request, error) {
+		vacanciesRaw, _ := RequestTake(func() (*http.Request, error) {
 			return requestGetVacancies(i, period)
 		})
 		vacancies := vacanciesCollection(vacanciesRaw)
@@ -86,7 +86,7 @@ func requestGetVacancies(page int, period string) (*http.Request, error) {
 	)
 }
 
-func requestTake(callback func() (*http.Request, error)) ([]byte, error) {
+func RequestTake(callback func() (*http.Request, error)) ([]byte, error) {
 	client := &http.Client{}
 
 	request, err := callback()
