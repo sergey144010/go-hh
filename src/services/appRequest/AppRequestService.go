@@ -16,3 +16,12 @@ func RequestGet(uri string, accessToken string) (*http.Request, error) {
 
 	return request, nil
 }
+
+func SimpleGet(uri string) (*http.Request, error) {
+	request, err := http.NewRequest(http.MethodGet, uri, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return request, nil
+}
