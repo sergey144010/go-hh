@@ -10,7 +10,28 @@
                 Всего найдено: {{ countVacancies }} |
                 Отображено: {{ countFilteredVacancies }} |
                 Выбрано: {{ countSelectedVacancies }}
-                <button @click="onReset">Сбросить</button>
+                <button @click="onReset">Сбросить</button> |
+                <a :href="hhOauthUri" target="_blank">Логин в hh</a> |
+                <a href="/" @click="onUserProfile($event)">User Profile</a> |
+                <a href="/" @click="onTakeAccessToken($event)">Take Access Token</a>
+            </div>
+            <div v-if="userProfileVisible">
+                <div>
+                    <span>user login code</span>
+                    <input type="text" v-model="userHhLoginCode"/>
+                </div>
+                <div>
+                    <span>access token</span>
+                    <input type="text" v-model="userHhAccessToken"/>
+                </div>
+                <div>
+                    <span>refresh token</span>
+                    <input type="text" v-model="userHhRefreshToken"/>
+                </div>
+                <div>
+                    <span>сопроводительное письмо</span>
+                    <textarea></textarea>
+                </div>
             </div>
             <table>
                 <tr>
@@ -91,6 +112,11 @@
       filterDate: '',
       filterCompany: '',
       selectedPositions: [],
+      hhOauthUri: [[ .Uri ]],
+      userProfileVisible: false,
+      userHhLoginCode: '',
+      userHhAccessToken: '',
+      userHhRefreshToken: '',
     }
   },
   computed: {
@@ -178,6 +204,27 @@
     },
     onReset() {
         this.selectedPositions = []
+    },
+    onUserProfile(event) {
+        event.preventDefault()
+        this.userProfileVisible = !this.userProfileVisible
+    },
+    onTakeAccessToken(event) {
+        event.preventDefault()
+        fetch(
+            "/api/take-token", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify({code: this.userHhLoginCode})
+        })
+        .then(response => response.json())
+        .then(result => this.setTokens(result))
+    },
+    setTokens(result) {
+        this.userHhAccessToken = result.access_token
+        this.userHhRefreshToken = result.refresh_token
     },
   },
   }).mount('#app')
