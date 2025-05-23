@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"go-hh/src/controllers/api"
+	LoginHhController "go-hh/src/controllers/login-hh"
 	IndexController "go-hh/src/controllers/main"
 	TestController "go-hh/src/controllers/test"
 	VacanciesController "go-hh/src/controllers/vacancies"
@@ -26,6 +28,8 @@ func main() {
 	router.HandleFunc("/vacancies/", redirectToMain)
 	router.HandleFunc("/vacancies/php/{period}", VacanciesController.Handler)
 	router.HandleFunc("/test", TestController.Handler)
+	router.HandleFunc("/login-hh", LoginHhController.Handler)
+	router.HandleFunc("/api/take-token", api.TakeTokens).Methods(http.MethodPost)
 	http.Handle("/", router)
 
 	fmt.Println("Server is listening...")
