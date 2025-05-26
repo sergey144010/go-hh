@@ -261,6 +261,16 @@
     },
     onSend(event) {
         event.preventDefault()
+        if (this.selectedPositions.length < 1) {
+            return
+        }
+        if (this.userHhResumeId.length < 3) {
+            return
+        }
+        if (this.userHhAccessToken.length < 3) {
+            return
+        }
+
         fetch(
             "/api/send", {
                 method: 'POST',
