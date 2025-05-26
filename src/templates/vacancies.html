@@ -84,8 +84,11 @@
                         <input v-model="filterVacanciesOnly">
                     </td>
                     <td>
-                        <p>содержит</p>
+                        <p>исключить</p>
                         <input v-model="filterCompany">
+
+                        <p>содержит</p>
+                        <input v-model="filterCompanyOnly">
                     </td>
                     <td>
                         <select v-model="selectedWorkFormat" multiple>
@@ -139,6 +142,7 @@
       selectedWorkFormat: '',
       filterDate: '',
       filterCompany: '',
+      filterCompanyOnly: '',
       selectedPositions: [],
       hhOauthUri: [[ .Uri ]],
       userProfileVisible: false,
@@ -157,7 +161,7 @@
             this.filterVacancies.length !=0 &&
             this.filterVacancies.length > 2
         ) {
-            listFilters = this.filterVacancies.toLowerCase().split(',').map(item => item.trim())
+            let listFilters = this.filterVacancies.toLowerCase().split(',').map(item => item.trim())
             let regexp = new RegExp(listFilters.join('|'), "i")
 
             preparedList = this.vacancies.filter(function(vac) {
@@ -203,9 +207,24 @@
             }, this);
         }
 
-        if (this.filterCompany.length != 0) {
+        if (
+            this.filterCompany.length !=0 &&
+            this.filterCompany.length > 2
+        ) {
+            let listFiltersCompany = this.filterCompany.toLowerCase().split(',').map(item => item.trim())
+            let regexp = new RegExp(listFiltersCompany.join('|'), "i")
+
             preparedList = preparedList.filter(function(vac) {
-                if (vac.employer.name.toLowerCase().includes(this.filterCompany.toLowerCase())) {
+                if (! regexp.test(vac.employer.name.toLowerCase())) {
+                    return true
+                }
+                return false
+            }, this)
+        }
+
+        if (this.filterCompanyOnly.length != 0) {
+            preparedList = preparedList.filter(function(vac) {
+                if (vac.employer.name.toLowerCase().includes(this.filterCompanyOnly.toLowerCase())) {
                     return true
                 }
                 return false
