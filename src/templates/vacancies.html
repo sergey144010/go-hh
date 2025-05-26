@@ -3,6 +3,7 @@
         <meta charset="UTF-8">
         <title>Vacancies</title>
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <script src="https://unpkg.com/vue-cookies@1.8.6/vue-cookies.js"></script>
     </head>
     <body>        
         <div id="app">
@@ -11,31 +12,54 @@
                 Отображено: {{ countFilteredVacancies }} |
                 Выбрано: {{ countSelectedVacancies }}
                 <button @click="onReset">Сбросить</button> |
-                <a :href="hhOauthUri" target="_blank">Логин в hh</a> |
-                <a href="/" @click="onUserProfile($event)">User Profile</a>
+                <a href="/" @click="onUserProfile($event)">User Profile</a> |
+                <a href="/" @click="onSend($event)">Откликнуться</a>
             </div>
             <div v-if="userProfileVisible">
-                <div>
-                    <span>user login code</span>
-                    <input type="text" v-model="userHhLoginCode"/> | 
-                    <a href="/" @click="onTakeAccessToken($event)">Take Access Token</a>
-                </div>
-                <div>
-                    <span>access token</span>
-                    <input type="text" v-model="userHhAccessToken"/>
-                </div>
-                <div>
-                    <span>refresh token</span>
-                    <input type="text" v-model="userHhRefreshToken"/>
-                </div>
-                <div>
-                    <span>resume id</span>
-                    <input type="text" v-model="userHhResumeId"/>
-                </div>
-                <div>
-                    <span>сопроводительное письмо</span>
-                    <textarea></textarea>
-                </div>
+                <table>
+                    <tr>
+                        <td><a :href="hhOauthUri" target="_blank">Логин в hh</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>user login code</td>
+                        <td>
+                            <input type="text" v-model="userHhLoginCode"/>
+                        </td>
+                        <td>
+                            <a href="/" @click="onTakeAccessToken($event)">Take Access Token</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>access token</td>
+                        <td>
+                            <input type="text" v-model="userHhAccessToken"/>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>refresh token</td>
+                        <td>
+                            <input type="text" v-model="userHhRefreshToken"/>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>resume id</td>
+                        <td>
+                            <input type="text" v-model="userHhResumeId"/>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>сопроводительное письмо</td>
+                        <td>
+                            <textarea v-model="message"></textarea>
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
             </div>
             <table>
                 <tr>
@@ -104,7 +128,7 @@
 <script>
   const { createApp, ref } = Vue
 
-  createApp({
+  const app = createApp({
     data() {
     return {
       filterVacancies: 'bitrix, битрикс, 1с, 1c, devops, авитолог, истемный администратор',
@@ -122,6 +146,7 @@
       userHhAccessToken: '',
       userHhRefreshToken: '',
       userHhResumeId: '',
+      message: '',
     }
   },
   computed: {
@@ -234,8 +259,50 @@
         this.userHhAccessToken = result.access_token
         this.userHhRefreshToken = result.refresh_token
     },
+    onSend(event) {
+        event.preventDefault()
+        fetch(
+            "/api/send", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify({
+                    vacancy_id_list: this.selectedPositions,
+                    message: this.message,
+                    resume_id: this.userHhResumeId,
+                    access_token: this.userHhAccessToken
+                })
+        })
+    },
   },
-  }).mount('#app')
+  watch: {
+    userHhLoginCode: function (value) {
+        if (value.length < 3) {
+            return
+        }
+        window.$cookies.set("code", value, "90d")
+    },
+    userHhAccessToken: function (value) {
+        if (value.length < 3) {
+            return
+        }
+        window.$cookies.set("token", value, "90d")
+    },
+    userHhResumeId: function (value) {
+        if (value.length < 3) {
+            return
+        }
+        window.$cookies.set("resume_id", value, "90d")
+    },
+  },
+  mounted() {
+    this.userHhLoginCode = window.$cookies.get("code")
+    this.userHhAccessToken = window.$cookies.get("token")
+    this.userHhResumeId = window.$cookies.get("resume_id")
+  },
+  })
+  app.mount('#app')
 </script>
     </body>
 </html>
