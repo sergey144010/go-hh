@@ -7,7 +7,7 @@ import (
 	// VacancyService "go-hh/src/services/vacancy"
 
 	"fmt"
-	"io"
+	// "io"
 	// "log"
 	"os"
 	"bytes"
