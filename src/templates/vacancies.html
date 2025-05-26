@@ -284,6 +284,18 @@
                     access_token: this.userHhAccessToken
                 })
         })
+        .then(response => {
+            if (response.ok) {
+                this.onSendSuccess()
+                return response.json();
+            }
+            throw new Error('Request error');
+        })
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+    },
+    onSendSuccess() {
+        this.onReset()
     },
   },
   watch: {
