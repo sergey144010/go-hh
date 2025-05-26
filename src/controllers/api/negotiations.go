@@ -6,6 +6,7 @@ import (
 	"net/http"
 	// VacancyService "go-hh/src/services/vacancy"
 
+	"fmt"
 	"io"
 	// "log"
 	"os"
@@ -39,62 +40,66 @@ func Send(w http.ResponseWriter, r *http.Request) {
 	// req, _ := request()
 	// resp, _ := client.Do(req)
 
-	buffer := &bytes.Buffer{}
-	mpw := multipart.NewWriter(buffer)
-
-	resumeIdWriter, err := mpw.CreateFormField("resume_id")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	for _, vacancyId := range request.VacancyIdList {
+		buffer := &bytes.Buffer{}
+		mpw := multipart.NewWriter(buffer)
+	
+		resumeIdWriter, err := mpw.CreateFormField("resume_id")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		_, err = resumeIdWriter.Write([]byte(request.ResumeId))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	
+		// messageWriter, err := mpw.CreateFormField("message")
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// }
+		// _, err = messageWriter.Write([]byte(request.Message))
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// }
+	
+		vacancyIdWriter, errV := mpw.CreateFormField("vacancy_id")
+		if errV != nil {
+			http.Error(w, errV.Error(), http.StatusInternalServerError)
+		}
+		_, errV = vacancyIdWriter.Write([]byte(vacancyId))
+		if errV != nil {
+			http.Error(w, errV.Error(), http.StatusInternalServerError)
+		}
+	
+		err = mpw.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	
+		client := &http.Client{}
+	
+		req, err := http.NewRequest("POST", "https://api.hh.ru/negotiations", buffer)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	
+		req.Header.Add("Content-Type", mpw.FormDataContentType())
+		req.Header.Add("User-Agent", os.Getenv("USER_AGENT"))
+		req.Header.Add("Authorization", "Bearer " + request.AccessToken)
+	
+		resp, err := client.Do(req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	
+		defer resp.Body.Close()
+	
+		fmt.Println("Vacancy Id:", vacancyId)
+		fmt.Println("Status Code:", resp.StatusCode)
 	}
-	_, err = resumeIdWriter.Write([]byte(request.ResumeId))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
 
-	// messageWriter, err := mpw.CreateFormField("message")
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
-	// _, err = messageWriter.Write([]byte(request.Message))
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
-
-	vacancyIdWriter, errV := mpw.CreateFormField("vacancy_id")
-	if errV != nil {
-		http.Error(w, errV.Error(), http.StatusInternalServerError)
-	}
-	_, errV = vacancyIdWriter.Write([]byte(request.VacancyIdList[0]))
-	if errV != nil {
-		http.Error(w, errV.Error(), http.StatusInternalServerError)
-	}
-
-	err = mpw.Close()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	client := &http.Client{}
-
-	req, err := http.NewRequest("POST", "https://api.hh.ru/negotiations", buffer)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	req.Header.Add("Content-Type", mpw.FormDataContentType())
-	req.Header.Add("User-Agent", os.Getenv("USER_AGENT"))
-	req.Header.Add("Authorization", "Bearer " + request.AccessToken)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	defer resp.Body.Close()
-
-	reader := bytes.NewReader([]byte(string(resp.StatusCode)))
-	io.Copy(os.Stdout, reader)
+	// io.Copy(os.Stdout, resp.Body)
 
 	// body, errR := io.ReadAll(resp.Body)
 	// if errR != nil {
