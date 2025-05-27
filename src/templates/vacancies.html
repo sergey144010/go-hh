@@ -336,11 +336,18 @@
         }
         window.$cookies.set("resume_id", value, "90d")
     },
+    message: function(value) {
+        if (value.length < 3) {
+            return
+        }
+        localStorage.setItem("message", value)
+    }
   },
   mounted() {
     this.userHhLoginCode = window.$cookies.get("code")
     this.userHhAccessToken = window.$cookies.get("token")
     this.userHhResumeId = window.$cookies.get("resume_id")
+    this.message = localStorage.getItem("message")
   },
   })
   app.mount('#app')
