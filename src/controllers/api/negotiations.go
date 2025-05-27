@@ -7,7 +7,7 @@ import (
 	// VacancyService "go-hh/src/services/vacancy"
 
 	"fmt"
-	// "io"
+	"io"
 	// "log"
 	"os"
 	"bytes"
@@ -53,14 +53,14 @@ func Send(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	
-		// messageWriter, err := mpw.CreateFormField("message")
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// }
-		// _, err = messageWriter.Write([]byte(request.Message))
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// }
+		messageWriter, err := mpw.CreateFormField("message")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		_, err = messageWriter.Write([]byte(request.Message))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	
 		vacancyIdWriter, errV := mpw.CreateFormField("vacancy_id")
 		if errV != nil {
@@ -97,9 +97,8 @@ func Send(w http.ResponseWriter, r *http.Request) {
 	
 		fmt.Println("Vacancy Id:", vacancyId)
 		fmt.Println("Status Code:", resp.StatusCode)
+		io.Copy(os.Stdout, resp.Body)
 	}
-
-	// io.Copy(os.Stdout, resp.Body)
 
 	// body, errR := io.ReadAll(resp.Body)
 	// if errR != nil {
