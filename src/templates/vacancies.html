@@ -65,14 +65,14 @@
                 <tr>
                     <th></th>
                     <th style="width:500px">Name</th>
+                    <th>Link</th>
                     <th style="word-wrap: break-word; max-width: 100px;">Employer</th>
-                    <th>Format</th>
                     <th>From</th>
                     <th>To</th>
-                    <th>Created at</th>
                     <th>Ответили</th>
                     <th>Откликнулось</th>
-                    <th>Link</th>
+                    <th>Format</th>
+                    <th>Created at</th>
                 </tr>
                 <tr>
                     <td></td>
@@ -83,6 +83,7 @@
                         <p>выбрать только</p>
                         <input v-model="filterVacanciesOnly">
                     </td>
+                    <td></td>
                     <td>
                         <p>исключить</p>
                         <input v-model="filterCompany">
@@ -90,24 +91,27 @@
                         <p>содержит</p>
                         <input v-model="filterCompanyOnly">
                     </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     <td>
                         <select v-model="selectedWorkFormat" multiple>
                             <option v-for="item in workFormatList" v-bind:value="item">{{item.name}}</option>
                        </select>
                     </td>
-                    <td></td>
-                    <td></td>
                     <td>
                         <p>содержит</p>
                         <input v-model="filterDate">
                     </td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
                 </tr>
                 <tr
                   style="height:30px"
-                  v-for="vacancy in filteredVacancies"
+                  v-for="(vacancy, index) in filteredVacancies"
+                  :key="index"
+                  @mouseover="hoveredRow = index"
+                  @mouseleave="hoveredRow = null"
+                  :class="{ 'highlight': hoveredRow === index }"
                 >
                     <td>
                         <input type="checkbox" v-bind:value="vacancy.id" v-model="selectedPositions">
@@ -115,16 +119,16 @@
                     <td @click="onSelectPosition(vacancy)">
                         {{ vacancy.name }}
                     </td>
+                    <td><a :href="vacancy.alternate_url" target="_blank">{{ vacancy.id }}</a></td>
                     <td>{{ vacancy.employer.name }}</td>
+                    <td>{{ vacancy.salary.from }}</td>
+                    <td>{{ vacancy.salary.to }}</td>
+                    <td>{{ vacancy.counters.responses }}</td>
+                    <td>{{ vacancy.counters.total_responses }}</td>
                     <td>
                         <span v-for="vformat in vacancy.work_format">{{ vformat.name }} </span>
                     </td>
-                    <td>{{ vacancy.salary.from }}</td>
-                    <td>{{ vacancy.salary.to }}</td>
                     <td>{{ vacancy.created_at }}</td>
-                    <td>{{ vacancy.counters.responses }}</td>
-                    <td>{{ vacancy.counters.total_responses }}</td>
-                    <td><a :href="vacancy.alternate_url" target="_blank">{{ vacancy.id }}</a></td>
                 </tr>
             </table>
         </div>
@@ -151,6 +155,7 @@
       userHhRefreshToken: '',
       userHhResumeId: '',
       message: '',
+      hoveredRow: null,
     }
   },
   computed: {
@@ -354,3 +359,10 @@
 </script>
     </body>
 </html>
+
+<style>
+.highlight {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+</style>
