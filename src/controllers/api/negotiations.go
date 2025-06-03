@@ -79,7 +79,7 @@ func Send(w http.ResponseWriter, r *http.Request) {
 	
 		client := &http.Client{}
 	
-		req, err := http.NewRequest("POST", "https://api.hh.ru/negotiations", buffer)
+		req, err := http.NewRequest("POST", os.Getenv("API_URI") + "/negotiations", buffer)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
