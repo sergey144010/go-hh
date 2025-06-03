@@ -86,6 +86,13 @@ func requestGetVacancies(page int, period string) (*http.Request, error) {
 	)
 }
 
+func RequestGetVacancy(id string, accessToken string) (*http.Request, error) {
+	return AppRequestService.RequestGet(
+		os.Getenv("API_URI") + "/vacancies/" + id,
+		accessToken,
+	)
+}
+
 func RequestTake(callback func() (*http.Request, error)) ([]byte, error) {
 	client := &http.Client{}
 
