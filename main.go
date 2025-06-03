@@ -31,6 +31,7 @@ func main() {
 	router.HandleFunc("/login-hh", LoginHhController.Handler)
 	router.HandleFunc("/api/take-token", api.TakeTokens).Methods(http.MethodPost)
 	router.HandleFunc("/api/send", api.Send).Methods(http.MethodPost)
+	router.HandleFunc("/api/analyze", api.Analyze).Methods(http.MethodPost)
 	http.Handle("/", router)
 
 	fmt.Println("Server is listening...")
