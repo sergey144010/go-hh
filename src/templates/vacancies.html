@@ -13,7 +13,8 @@
                 Выбрано: {{ countSelectedVacancies }}
                 <button @click="onReset">Сбросить</button> |
                 <a href="/" @click="onUserProfile($event)">User Profile</a> |
-                <a href="/" @click="onSend($event)">Откликнуться</a>
+                <a href="/" @click="onSend($event)">Откликнуться</a> |
+                <a href="/" @click="onAnalyze($event)">Анализ</a>
             </div>
             <div v-if="userProfileVisible">
                 <table>
@@ -320,6 +321,28 @@
     },
     onSendSuccess() {
         this.onReset()
+    },
+    onAnalyze(event) {
+        event.preventDefault()
+        fetch(
+            "/api/analyze", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify({
+                    vacancy_id_list: this.selectedPositions,
+                    access_token: this.userHhAccessToken
+                })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Request error');
+        })
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
     },
   },
   watch: {
